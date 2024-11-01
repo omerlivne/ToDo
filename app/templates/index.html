@@ -1,0 +1,15 @@
+{#templates/index.html#}
+{% extends "base.html" %}
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-md-12">
+            <h1 class="display-4">Welcome, {{ current_user.username }}!</h1>
+            <p class="lead">You have successfully logged in to the application.</p>
+            <hr class="my-4">
+            <p>This is your personal dashboard. More features coming soon!</p>
+        </div>
+    </div>
+{% endblock %}

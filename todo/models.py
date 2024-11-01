@@ -1,4 +1,4 @@
-# app/models.py
+# todo\models.py
 from todo import db, login_manager
 from flask_login import UserMixin
 from flask_bcrypt import Bcrypt

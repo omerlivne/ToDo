@@ -1,9 +1,9 @@
 # app/routes.py
 from flask import render_template, redirect, url_for, flash
 from flask_login import login_user, logout_user, login_required, current_user
-from app.forms import LoginForm, RegistrationForm
-from app.models import User
-from app import app, db
+from todo.forms import LoginForm, RegistrationForm
+from todo.models import User
+from todo import app, db
 
 @app.route('/')
 @login_required

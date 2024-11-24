@@ -14,7 +14,7 @@
                         <small>Status: {{ task.status }}</small><br>
                         <small>Due: {{ task.due_date or "N/A" }}</small><br>
                         <small>Created by: {{ task.creator_username }}</small><br>
-                        <small>Created on: {{ task.creation_date }}</small>
+                        <small>Created on: {{ task.creation_date.strftime("%m/%d/%Y %H:%M") }}</small>
                     </li>
                 {% endfor %}
             </ul>

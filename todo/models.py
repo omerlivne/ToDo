@@ -37,7 +37,7 @@ class Task(db.Model):
     name = db.Column(db.String(), nullable=False)
     description = db.Column(db.Text, nullable=True)
     status = db.Column(db.String(), nullable=False, default="Pending")
-    creation_date = db.Column(db.DateTime, default=datetime.now().strftime("%m/%d/%Y %H:%M"))
+    creation_date = db.Column(db.DateTime, default=datetime.now())
     due_date = db.Column(db.DateTime, nullable=True)
     creator_username = db.Column(db.String(), db.ForeignKey('users.username'), nullable=False)
 

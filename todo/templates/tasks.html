@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block title %}Tasks{% endblock %}
+
+{% block content %}
+    <h1 class="mb-4">Your Tasks</h1>
+    <div class="row">
+        <div class="col-md-8">
+            <ul class="list-group">
+                {% for task in tasks %}
+                    <li class="list-group-item">
+                        <h5>{{ task.name }}</h5>
+                        <p>{{ task.description }}</p>
+                        <small>Status: {{ task.status }}</small><br>
+                        <small>Due: {{ task.due_date or "N/A" }}</small><br>
+                        <small>Created by: {{ task.creator_username }}</small><br>
+                        <small>Created on: {{ task.creation_date }}</small>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+        <div class="col-md-4">
+            <h4>Create a Task</h4>
+            <form method="POST" action="">
+                {{ form.hidden_tag() }}
+                <div class="mb-3">
+                    {{ form.name.label(class="form-label") }}
+                    {{ form.name(class="form-control") }}
+                </div>
+                <div class="mb-3">
+                    {{ form.description.label(class="form-label") }}
+                    {{ form.description(class="form-control") }}
+                </div>
+                <div class="mb-3">
+                    {{ form.due_date.label(class="form-label") }}
+                    {{ form.due_date(class="form-control") }}
+                </div>
+                <div class="d-grid">
+                    {{ form.submit(class="btn btn-primary") }}
+                </div>
+            </form>
+        </div>
+    </div>
+{% endblock %}

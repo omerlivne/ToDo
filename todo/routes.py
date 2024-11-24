@@ -1,8 +1,8 @@
 # todo\routes.py
 from flask import render_template, redirect, url_for, flash
 from flask_login import login_user, logout_user, login_required, current_user
-from todo.forms import LoginForm, RegistrationForm
-from todo.models import User
+from todo.forms import LoginForm, RegistrationForm, TaskForm
+from todo.models import User, Task
 from todo import app, db
 
 @app.route('/')
@@ -23,7 +23,7 @@ def register():
         login_user(user)
         flash('Registration successful! You are now logged in', 'success')
         return redirect(url_for('index'))
-    return render_template('register.html', form=form)  # Create register.html in the templates folder
+    return render_template('register.html', form=form)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -38,7 +38,7 @@ def login():
             flash('Login successful!', 'success')
             return redirect(url_for('index'))
         flash('Login unsuccessful. Please check username and password', 'danger')
-    return render_template('login.html', form=form)  # Create login.html in the templates folder
+    return render_template('login.html', form=form)
 
 @app.route('/logout')
 @login_required
@@ -46,3 +46,22 @@ def logout():
     logout_user()
     flash('You have been logged out', 'success')
     return redirect(url_for('index'))
+
+@app.route('/tasks', methods=['GET', 'POST'])
+@login_required
+def tasks():
+    form = TaskForm()
+    if form.validate_on_submit():
+        task = Task(
+            name=form.name.data,
+            description=form.description.data,
+            due_date=form.due_date.data,
+            creator_username=current_user.username
+        )
+        db.session.add(task)
+        db.session.commit()
+        flash('Task created successfully!', 'success')
+        return redirect(url_for('tasks'))
+
+    user_tasks = Task.query.filter_by(creator_username=current_user.username).all()
+    return render_template('tasks.html', form=form, tasks=user_tasks)

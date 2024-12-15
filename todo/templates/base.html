@@ -19,7 +19,7 @@
             <ul class="navbar-nav ms-auto">
                 {% if current_user.is_authenticated %}
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('tasks') }}">Tasks</a>
+                        <a class="nav-link" href="{{ url_for('groups') }}">Groups</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('logout') }}">Logout</a>

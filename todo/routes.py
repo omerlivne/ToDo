@@ -1,5 +1,5 @@
 # todo\routes.py
-from flask import render_template, redirect, url_for, flash
+from flask import render_template, redirect, url_for, flash, request
 from flask_login import login_user, logout_user, login_required, current_user
 from todo.forms import LoginForm, RegistrationForm, GroupForm, TaskForm
 from todo.models import User, Task, Group
@@ -89,3 +89,26 @@ def tasks(group_id):
         return redirect(f"{url_for('groups')}/{group_id}")
 
     return render_template('tasks.html', form=form, tasks=Task.query.filter_by(group_id=group_id).all())
+
+@app.route('/groups/<int:group_id>/add_member', methods=['GET', 'POST'])
+@login_required
+def add_member(group_id):
+    group = Group.query.get(group_id)
+    if not group:
+        flash('Group not found', 'danger')
+        return redirect(url_for('groups'))
+    if current_user.username not in group.members:
+        flash('You are not authorized to add members to this group', 'danger')
+        return redirect(url_for('groups'))
+
+    if request.method == 'POST':
+        username = request.form.get('username')
+        user = User.query.filter_by(username=username).first()
+        if user:
+            group.add_member(username)
+            flash(f'{username} has been added to the group', 'success')
+        else:
+            flash('User not found', 'danger')
+        return redirect(url_for('add_member', group_id=group_id))
+
+    return render_template('add_member.html', group=group)

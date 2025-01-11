@@ -56,6 +56,23 @@ class Group(db.Model):
         db.session.add(user_group)
         db.session.commit()
 
+    def update_group(self, name, description):
+        self.name = name
+        self.description = description
+        db.session.commit()
+
+    def set_admin(self, username, admin_status):
+        user_group = UserGroup.query.filter_by(user_id=username, group_id=self.id).first()
+        if user_group:
+            user_group.admin = admin_status
+            db.session.commit()
+
+    def is_admin(self, username):
+        user_group = UserGroup.query.filter_by(user_id=username, group_id=self.id).first()
+        if user_group and user_group.admin:
+            return True
+        return False
+
 class Task(db.Model):
     __tablename__ = 'tasks'
 

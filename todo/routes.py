@@ -1,8 +1,8 @@
 # todo\routes.py
 from flask import render_template, redirect, url_for, flash, request
 from flask_login import login_user, logout_user, login_required, current_user
-from todo.forms import LoginForm, RegistrationForm, GroupForm, TaskForm
-from todo.models import User, Task, Group
+from todo.forms import LoginForm, RegistrationForm, GroupForm, TaskForm, GroupEditForm
+from todo.models import User, Task, Group, UserGroup
 from todo import app, db
 @app.route('/')
 @login_required
@@ -112,3 +112,29 @@ def add_member(group_id):
         return redirect(url_for('add_member', group_id=group_id))
 
     return render_template('add_member.html', group=group)
+
+
+@app.route('/groups/<int:group_id>/edit', methods=['GET', 'POST'])
+@login_required
+def edit_group(group_id):
+    # TODO: handle manage member
+    group = Group.query.get(group_id)
+    if not group:
+        flash('Group not found', 'danger')
+        return redirect(url_for('groups'))
+
+    # Only admins can edit the group
+    if current_user.username not in group.members or not group.is_admin(current_user.username):
+        flash('You are not authorized to edit this group', 'danger')
+        return redirect(url_for('groups'))
+
+    form = GroupEditForm()
+    if form.validate_on_submit():
+        group.update_group(form.name.data, form.description.data)
+        flash('Group updated successfully!', 'success')
+        return redirect(url_for('groups'))
+
+    # Populate the form with existing group details
+    form.name.data = group.name
+    form.description.data = group.description
+    return render_template('edit_group.html', form=form, group=group)

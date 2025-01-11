@@ -39,3 +39,8 @@ class TaskForm(FlaskForm):
     description = TextAreaField('Description', validators=[Optional()])
     due_date = DateTimeLocalField('Due Date', validators=[Optional()])
     submit = SubmitField('Create Task')
+
+class GroupEditForm(FlaskForm):
+    name = StringField('Name', validators=[DataRequired()])
+    description = TextAreaField('Description', validators=[Optional()])
+    submit = SubmitField('Update Group')

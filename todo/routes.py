@@ -2,12 +2,15 @@
 from flask import render_template, redirect, url_for, flash, request
 from flask_login import login_user, logout_user, login_required, current_user
 from todo.forms import LoginForm, RegistrationForm, GroupForm, TaskForm, GroupEditForm
-from todo.models import User, Task, Group, UserGroup
+from todo.models import User, Task, Group
 from todo import app, db
+
+
 @app.route('/')
 @login_required
 def index():
     return render_template('index.html')
+
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -24,6 +27,7 @@ def register():
         return redirect(url_for('index'))
     return render_template('register.html', form=form)
 
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated:
@@ -39,12 +43,14 @@ def login():
         flash('Login unsuccessful. Please check username and password', 'danger')
     return render_template('login.html', form=form)
 
+
 @app.route('/logout')
 @login_required
 def logout():
     logout_user()
     flash('You have been logged out', 'success')
     return redirect(url_for('index'))
+
 
 @app.route('/groups', methods=['GET', 'POST'])
 @login_required
@@ -54,6 +60,7 @@ def groups():
         group = Group(
             name=form.name.data,
             description=form.description.data,
+            owner=current_user.username
         )
         db.session.add(group)
         db.session.commit()
@@ -62,6 +69,7 @@ def groups():
         return redirect(url_for('groups'))
 
     return render_template('groups.html', form=form, groups=current_user.groups)
+
 
 @app.route('/groups/<int:group_id>', methods=['GET', 'POST'])
 @login_required
@@ -90,6 +98,7 @@ def tasks(group_id):
 
     return render_template('tasks.html', form=form, tasks=Task.query.filter_by(group_id=group_id).all())
 
+
 @app.route('/groups/<int:group_id>/add_member', methods=['GET', 'POST'])
 @login_required
 def add_member(group_id):
@@ -117,7 +126,6 @@ def add_member(group_id):
 @app.route('/groups/<int:group_id>/edit', methods=['GET', 'POST'])
 @login_required
 def edit_group(group_id):
-    # TODO: handle manage member
     group = Group.query.get(group_id)
     if not group:
         flash('Group not found', 'danger')
@@ -130,7 +138,23 @@ def edit_group(group_id):
 
     form = GroupEditForm()
     if form.validate_on_submit():
+        # Update group details
         group.update_group(form.name.data, form.description.data)
+
+        # Get the list of admin changes from the form
+        new_admins = request.form.getlist('admins')
+
+        # Check and update the admin status for each member
+        for username in group.members:
+            # Determine if this member should be an admin (True/False)
+            is_admin = username in new_admins
+
+            if username == group.owner:
+                continue
+
+            # Update the member's admin status
+            group.update_member_permission(username, is_admin)
+
         flash('Group updated successfully!', 'success')
         return redirect(url_for('groups'))
 

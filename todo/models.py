@@ -6,6 +6,7 @@ from datetime import datetime
 
 bcrypt = Bcrypt()
 
+
 # User loader for Flask-Login
 @login_manager.user_loader
 def load_user(username):
@@ -32,7 +33,9 @@ class User(db.Model, UserMixin):
 
     @property
     def groups(self):
-        return Group.query.join(UserGroup, UserGroup.group_id == Group.id).filter(UserGroup.user_id == self.username).all()
+        return Group.query.join(UserGroup, UserGroup.group_id == Group.id).filter(
+            UserGroup.user_id == self.username).all()
+
 
 class Group(db.Model):
     __tablename__ = 'groups'
@@ -40,15 +43,22 @@ class Group(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String(), nullable=False)
     description = db.Column(db.Text, nullable=True)
+    owner = db.Column(db.String(), db.ForeignKey('users.username'), nullable=False)
 
-    def __init__(self, name, description):
+    def __init__(self, name, description, owner):
         self.name = name
         self.description = description
+        self.owner = owner
 
     @property
     def members(self):
         users = User.query.join(UserGroup).filter(UserGroup.group_id == self.id).all()
         return map(lambda user: user.username, users)
+
+    @property
+    def admins(self):
+        admins = UserGroup.query.filter_by(group_id=self.id, admin=True).all()
+        return map(lambda user_group: user_group.user_id, admins)
 
     def add_member(self, username, admin=False):
         user_group = UserGroup(username, self.id)
@@ -72,6 +82,14 @@ class Group(db.Model):
         if user_group and user_group.admin:
             return True
         return False
+
+    def update_member_permission(self, username, is_admin):
+        # Update the user's admin status
+        user_group = UserGroup.query.filter_by(user_id=username, group_id=self.id).first()
+        if user_group:
+            user_group.admin = is_admin
+            db.session.commit()
+
 
 class Task(db.Model):
     __tablename__ = 'tasks'

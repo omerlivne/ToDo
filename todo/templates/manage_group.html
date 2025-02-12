@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Group: {{ group.name }}{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <h2>Manage Group: {{ group.name }}</h2>
+            <form method="POST" action="">
+                {{ form.hidden_tag() }}
+
+                <!-- Group name and description fields -->
+                <div class="mb-3">
+                    {{ form.name.label(class="form-label") }}
+                    {{ form.name(class="form-control") }}
+                    {% for error in form.name.errors %}
+                        <span class="text-danger">{{ error }}</span>
+                    {% endfor %}
+                </div>
+                <div class="mb-3">
+                    {{ form.description.label(class="form-label") }}
+                    {{ form.description(class="form-control") }}
+                    {% for error in form.description.errors %}
+                        <span class="text-danger">{{ error }}</span>
+                    {% endfor %}
+                </div>
+
+                <h3 class="mt-4">Manage Members</h3>
+                <ul class="list-group">
+                    {% for member in members %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>
+                                {{ member.username }}
+                                <small class="text-muted">({{ member.role }})</small>
+                            </span>
+                            {% if current_user.username == group.owner and member.role != "Owner" %}
+                                <div class="form-check form-switch">
+                                    <input type="checkbox" class="form-check-input" id="admin_{{ member.username }}"
+                                           name="admins" value="{{ member.username }}"
+                                           {% if member.role == "Admin" %}checked{% endif %}>
+                                    <label for="admin_{{ member.username }}" class="form-check-label">Admin</label>
+                                </div>
+                            {% endif %}
+                        </li>
+                    {% endfor %}
+                </ul>
+
+                <h3 class="mt-4">Add New Member</h3>
+                <div class="mb-3">
+                    <label for="new_member_username" class="form-label">Username</label>
+                    <input type="text" class="form-control" id="new_member_username" name="new_member_username">
+                </div>
+
+                <div class="d-grid mt-4">
+                    <button type="submit" class="btn btn-success">Update Group</button>
+                </div>
+            </form>
+        </div>
+    </div>
+{% endblock %}

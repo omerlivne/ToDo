@@ -99,66 +99,74 @@ def tasks(group_id):
     return render_template('tasks.html', form=form, tasks=Task.query.filter_by(group_id=group_id).all())
 
 
-@app.route('/groups/<int:group_id>/add_member', methods=['GET', 'POST'])
+@app.route('/groups/<int:group_id>/manage', methods=['GET', 'POST'])
 @login_required
-def add_member(group_id):
+def manage_group(group_id):
     group = Group.query.get(group_id)
     if not group:
         flash('Group not found', 'danger')
         return redirect(url_for('groups'))
+
     if current_user.username not in group.members:
-        flash('You are not authorized to add members to this group', 'danger')
-        return redirect(url_for('groups'))
-
-    if request.method == 'POST':
-        username = request.form.get('username')
-        user = User.query.filter_by(username=username).first()
-        if user:
-            group.add_member(username)
-            flash(f'{username} has been added to the group', 'success')
-        else:
-            flash('User not found', 'danger')
-        return redirect(url_for('add_member', group_id=group_id))
-
-    return render_template('add_member.html', group=group)
-
-
-@app.route('/groups/<int:group_id>/edit', methods=['GET', 'POST'])
-@login_required
-def edit_group(group_id):
-    group = Group.query.get(group_id)
-    if not group:
-        flash('Group not found', 'danger')
-        return redirect(url_for('groups'))
-
-    # Only admins can edit the group
-    if current_user.username not in group.members or not group.is_admin(current_user.username):
-        flash('You are not authorized to edit this group', 'danger')
+        flash('You are not a member of this group', 'danger')
         return redirect(url_for('groups'))
 
     form = GroupEditForm()
     if form.validate_on_submit():
-        # Update group details
-        group.update_group(form.name.data, form.description.data)
+        # Update group details if the user is an admin or owner
+        if current_user.username in group.admins or current_user.username == group.owner:
+            group.update_group(form.name.data, form.description.data)
 
-        # Get the list of admin changes from the form
-        new_admins = request.form.getlist('admins')
+        # Handle adding new members (only if a username is provided)
+        new_member_username = request.form.get('new_member_username')
+        if new_member_username:  # Only proceed if a username is entered
+            user = User.query.filter_by(username=new_member_username).first()
+            if user:
+                group.add_member(new_member_username)
+                flash(f'{new_member_username} has been added to the group', 'success')
+            else:
+                flash('User not found', 'danger')
 
-        # Check and update the admin status for each member
-        for username in group.members:
-            # Determine if this member should be an admin (True/False)
-            is_admin = username in new_admins
-
-            if username == group.owner:
-                continue
-
-            # Update the member's admin status
-            group.update_member_permission(username, is_admin)
+        # Handle admin promotions if the user is the owner
+        if current_user.username == group.owner:
+            new_admins = request.form.getlist('admins')
+            for username in group.members:
+                if username == group.owner:
+                    continue
+                is_admin = username in new_admins
+                group.update_member_permission(username, is_admin)
 
         flash('Group updated successfully!', 'success')
-        return redirect(url_for('groups'))
+        return redirect(url_for('manage_group', group_id=group_id))
 
     # Populate the form with existing group details
     form.name.data = group.name
     form.description.data = group.description
-    return render_template('edit_group.html', form=form, group=group)
+
+    # Prepare member list with proper ordering and labels
+    members = []
+    for username in group.members:
+        if username == current_user.username:
+            display_name = "You"  # Replace the current user's name with "You"
+        else:
+            display_name = username
+
+        # Determine the role label
+        if username == group.owner:
+            role_label = "Owner"
+        elif username in group.admins:
+            role_label = "Admin"
+        else:
+            role_label = "Member"
+
+        members.append({'username': display_name, 'role': role_label})
+
+    # Sort members: You first, then Owner, then Admins alphabetically, then Members alphabetically
+    members.sort(key=lambda x: (
+        0 if x['username'] == "You" else
+        1 if x['role'] == "Owner" else
+        2 if x['role'] == "Admin" else 3,
+        x['username']
+    ))
+
+    return render_template('manage_group.html', form=form, group=group, members=members)

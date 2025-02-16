@@ -2,7 +2,7 @@
 from flask import render_template, redirect, url_for, flash, request
 from flask_login import login_user, logout_user, login_required, current_user
 from todo.forms import LoginForm, RegistrationForm, GroupForm, TaskForm, GroupEditForm
-from todo.models import User, Task, Group
+from todo.models import User, Task, Group, UserGroup
 from todo import app, db
 
 
@@ -113,6 +113,9 @@ def manage_group(group_id):
 
     form = GroupEditForm()
     if form.validate_on_submit():
+        # Track if a specific action (like adding or removing a user) was performed
+        specific_action_performed = False
+
         # Update group details if the user is an admin or owner
         if current_user.username in group.admins or current_user.username == group.owner:
             group.update_group(form.name.data, form.description.data)
@@ -120,12 +123,46 @@ def manage_group(group_id):
         # Handle adding new members (only if a username is provided)
         new_member_username = request.form.get('new_member_username')
         if new_member_username:  # Only proceed if a username is entered
-            user = User.query.filter_by(username=new_member_username).first()
-            if user:
-                group.add_member(new_member_username)
-                flash(f'{new_member_username} has been added to the group', 'success')
+            if new_member_username == current_user.username:
+                flash('You cannot add yourself to the group', 'warning')
+                specific_action_performed = True
             else:
-                flash('User not found', 'danger')
+                user = User.query.filter_by(username=new_member_username).first()
+                if user:
+                    if new_member_username in group.members:
+                        flash(f'{new_member_username} is already a member of the group', 'warning')
+                        specific_action_performed = True
+                    else:
+                        group.add_member(new_member_username)
+                        flash(f'{new_member_username} has been added to the group', 'success')
+                        specific_action_performed = True
+                else:
+                    flash('User not found', 'danger')
+                    specific_action_performed = True
+
+        # Handle removing members
+        remove_member_username = request.form.get('remove_member_username')
+        if remove_member_username:
+            # Only the owner and admins can remove members
+            if current_user.username != group.owner and not group.is_admin(current_user.username):
+                flash('You are not authorized to remove members from this group', 'danger')
+            else:
+                # Owner cannot remove themselves
+                if remove_member_username == current_user.username and current_user.username == group.owner:
+                    flash('You cannot remove yourself as the owner of the group', 'warning')
+                # Admins cannot remove other admins or the owner
+                elif current_user.username != group.owner and (remove_member_username in group.admins or remove_member_username == group.owner):
+                    flash('You are not authorized to remove this member', 'danger')
+                else:
+                    # Remove the member
+                    user_group = UserGroup.query.filter_by(user_id=remove_member_username, group_id=group_id).first()
+                    if user_group:
+                        db.session.delete(user_group)
+                        db.session.commit()
+                        flash(f'{remove_member_username} has been removed from the group', 'success')
+                        specific_action_performed = True
+                    else:
+                        flash('Member not found in the group', 'danger')
 
         # Handle admin promotions if the user is the owner
         if current_user.username == group.owner:
@@ -136,7 +173,10 @@ def manage_group(group_id):
                 is_admin = username in new_admins
                 group.update_member_permission(username, is_admin)
 
-        flash('Group updated successfully!', 'success')
+        # Only show the general success message if no specific action was performed
+        if not specific_action_performed:
+            flash('Group updated successfully!', 'success')
+
         return redirect(url_for('manage_group', group_id=group_id))
 
     # Populate the form with existing group details
@@ -159,14 +199,14 @@ def manage_group(group_id):
         else:
             role_label = "Member"
 
-        members.append({'username': display_name, 'role': role_label})
+        members.append({'username': username, 'display_name': display_name, 'role': role_label})
 
     # Sort members: You first, then Owner, then Admins alphabetically, then Members alphabetically
     members.sort(key=lambda x: (
-        0 if x['username'] == "You" else
+        0 if x['display_name'] == "You" else
         1 if x['role'] == "Owner" else
         2 if x['role'] == "Admin" else 3,
-        x['username']
+        x['display_name']
     ))
 
     return render_template('manage_group.html', form=form, group=group, members=members)

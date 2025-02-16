@@ -30,17 +30,22 @@
                     {% for member in members %}
                         <li class="list-group-item d-flex justify-content-between align-items-center">
                             <span>
-                                {{ member.username }}
+                                {{ member.display_name }}
                                 <small class="text-muted">({{ member.role }})</small>
                             </span>
-                            {% if current_user.username == group.owner and member.role != "Owner" %}
-                                <div class="form-check form-switch">
-                                    <input type="checkbox" class="form-check-input" id="admin_{{ member.username }}"
-                                           name="admins" value="{{ member.username }}"
-                                           {% if member.role == "Admin" %}checked{% endif %}>
-                                    <label for="admin_{{ member.username }}" class="form-check-label">Admin</label>
-                                </div>
-                            {% endif %}
+                            <div>
+                                {% if (current_user.username == group.owner or (group.is_admin(current_user.username) and member.role == "Member")) and member.username != current_user.username %}
+                                    <button type="submit" name="remove_member_username" value="{{ member.username }}" class="btn btn-danger btn-sm">Remove</button>
+                                {% endif %}
+                                {% if current_user.username == group.owner and member.role != "Owner" %}
+                                    <div class="form-check form-switch">
+                                        <input type="checkbox" class="form-check-input" id="admin_{{ member.username }}"
+                                               name="admins" value="{{ member.username }}"
+                                               {% if member.role == "Admin" %}checked{% endif %}>
+                                        <label for="admin_{{ member.username }}" class="form-check-label">Admin</label>
+                                    </div>
+                                {% endif %}
+                            </div>
                         </li>
                     {% endfor %}
                 </ul>

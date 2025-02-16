@@ -12,14 +12,14 @@
                 <!-- Group name and description fields -->
                 <div class="mb-3">
                     {{ form.name.label(class="form-label") }}
-                    {{ form.name(class="form-control", disabled=not (current_user.username in group.admins or current_user.username == group.owner)) }}
+                    {{ form.name(class="form-control", readonly=not (current_user.username in group.admins or current_user.username == group.owner)) }}
                     {% for error in form.name.errors %}
                         <span class="text-danger">{{ error }}</span>
                     {% endfor %}
                 </div>
                 <div class="mb-3">
                     {{ form.description.label(class="form-label") }}
-                    {{ form.description(class="form-control", disabled=not (current_user.username in group.admins or current_user.username == group.owner)) }}
+                    {{ form.description(class="form-control", readonly=not (current_user.username in group.admins or current_user.username == group.owner)) }}
                     {% for error in form.description.errors %}
                         <span class="text-danger">{{ error }}</span>
                     {% endfor %}

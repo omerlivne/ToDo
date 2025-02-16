@@ -116,12 +116,12 @@ def manage_group(group_id):
         # Track if a specific action (like adding or removing a user) was performed
         specific_action_performed = False
 
-        # Only admins and the owner can update group details
+        # Only admins and the owner can update group details (name and description)
         if current_user.username in group.admins or current_user.username == group.owner:
             group.update_group(form.name.data, form.description.data)
         else:
-            flash('You are not authorized to update the group details', 'danger')
-            return redirect(url_for('manage_group', group_id=group_id))
+            # Normal members cannot update group details, but they can still add members
+            pass
 
         # Handle adding new members (only if a username is provided)
         new_member_username = request.form.get('new_member_username')

@@ -44,3 +44,5 @@ class GroupEditForm(FlaskForm):
     name = StringField('Name', validators=[DataRequired()])
     description = TextAreaField('Description', validators=[Optional()])
     submit = SubmitField('Update Group')
+
+

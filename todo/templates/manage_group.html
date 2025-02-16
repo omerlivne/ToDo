@@ -6,8 +6,10 @@
     <div class="row">
         <div class="col-md-8 offset-md-2">
             <h2>Manage Group: {{ group.name }}</h2>
-            <form method="POST" action="">
+            <form id="groupForm" method="POST" action="">
                 {{ form.hidden_tag() }}
+                <!-- Hidden field for remove member action -->
+                <input type="hidden" name="remove_member_username" id="remove_member_username" value="">
 
                 <!-- Group name and description fields -->
                 <div class="mb-3">
@@ -35,7 +37,9 @@
                             </span>
                             <div>
                                 {% if (current_user.username == group.owner or (group.is_admin(current_user.username) and member.role == "Member")) and member.username != current_user.username %}
-                                    <button type="submit" name="remove_member_username" value="{{ member.username }}" class="btn btn-danger btn-sm">Remove</button>
+                                    <button type="button" onclick="removeMember('{{ member.username }}')"
+                                            class="btn btn-danger btn-sm">Remove
+                                    </button>
                                 {% endif %}
                                 {% if current_user.username == group.owner and member.role != "Owner" %}
                                     <div class="form-check form-switch">
@@ -62,4 +66,12 @@
             </form>
         </div>
     </div>
+
+    <script>
+        function removeMember(username) {
+            // Set the hidden field to the username of the member to remove and submit the form.
+            document.getElementById('remove_member_username').value = username;
+            document.getElementById('groupForm').submit();
+        }
+    </script>
 {% endblock %}

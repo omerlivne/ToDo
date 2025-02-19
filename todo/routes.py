@@ -57,6 +57,7 @@ def logout():
 def groups():
     form = GroupForm()
     if form.validate_on_submit():
+        # Create a new group
         group = Group(
             name=form.name.data,
             description=form.description.data,
@@ -68,8 +69,22 @@ def groups():
         flash('Group created successfully!', 'success')
         return redirect(url_for('groups'))
 
-    return render_template('groups.html', form=form, groups=current_user.groups)
+    # Handle group deletion if the "remove_group" parameter is present
+    remove_group_id = request.form.get('remove_group')
+    if remove_group_id:
+        group = Group.query.get(remove_group_id)
+        if not group:
+            flash('Group not found', 'danger')
+        elif current_user.username != group.owner:
+            flash('You are not authorized to delete this group', 'danger')
+        else:
+            db.session.delete(group)
+            db.session.commit()
+            flash('Group deleted successfully!', 'success')
+        return redirect(url_for('groups'))
 
+    # Display the list of groups
+    return render_template('groups.html', form=form, groups=current_user.groups)
 
 @app.route('/groups/<int:group_id>', methods=['GET', 'POST'])
 @login_required

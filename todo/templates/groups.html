@@ -1,4 +1,3 @@
-{#todo\templates\groups.html#}
 {% extends "base.html" %}
 
 {% block title %}Groups{% endblock %}
@@ -17,6 +16,13 @@
                             <a href="{{ url_for('groups') }}/{{ group.id }}" class="btn btn-primary btn-sm">View</a>
                             {% if current_user.username in group.members %}
                                 <a href="{{ url_for('manage_group', group_id=group.id) }}" class="btn btn-warning btn-sm">Manage</a>
+                            {% endif %}
+                            {% if current_user.username == group.owner %}
+                                <!-- Remove Group Button -->
+                                <form method="POST" action="{{ url_for('groups') }}" style="display: inline;">
+                                    <input type="hidden" name="remove_group" value="{{ group.id }}">
+                                    <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this group?')">Remove Group</button>
+                                </form>
                             {% endif %}
                         </div>
                     </li>

@@ -56,21 +56,29 @@ def logout():
 def profile():
     form = ProfileEditForm(original_username=current_user.username)
     if form.validate_on_submit():
+        # Store the old username for updating foreign keys
+        old_username = current_user.username
+
         # Update username if it has changed
         if form.username.data != current_user.username:
             current_user.username = form.username.data
+
+            # Update foreign key references in Group and UserGroup tables
+            Group.query.filter_by(owner=old_username).update({"owner": current_user.username})
+            UserGroup.query.filter_by(user_id=old_username).update({"user_id": current_user.username})
 
         # Update password if a new one is provided
         if form.password.data:
             current_user.password_hash = bcrypt.generate_password_hash(form.password.data)
 
+        # Commit all changes to the database
         db.session.commit()
 
         # Re-login the user to update the session
         login_user(current_user)
 
         flash('Your profile has been updated!', 'success')
-        return redirect(url_for('index'))
+        return redirect(url_for('profile'))
 
     # Pre-fill the form with the current user's data
     form.username.data = current_user.username

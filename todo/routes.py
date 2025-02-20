@@ -83,9 +83,11 @@ def groups():
             flash('Group deleted successfully!', 'success')
         return redirect(url_for('groups'))
 
-    # Display the list of groups
-    return render_template('groups.html', form=form, groups=current_user.groups)
+    # Sort the groups alphabetically by name (A-Z)
+    sorted_groups = sorted(current_user.groups, key=lambda x: x.name)
 
+    # Display the list of groups
+    return render_template('groups.html', form=form, groups=sorted_groups)
 @app.route('/groups/<int:group_id>', methods=['GET', 'POST'])
 @login_required
 def tasks(group_id):

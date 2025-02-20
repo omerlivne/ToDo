@@ -1,8 +1,8 @@
 # todo\routes.py
 from flask import render_template, redirect, url_for, flash, request
 from flask_login import login_user, logout_user, login_required, current_user
-from todo.forms import LoginForm, RegistrationForm, GroupForm, TaskForm, GroupEditForm
-from todo.models import User, Task, Group, UserGroup
+from todo.forms import LoginForm, RegistrationForm, GroupForm, TaskForm, GroupEditForm, ProfileEditForm
+from todo.models import User, Task, Group, UserGroup, bcrypt
 from todo import app, db
 
 
@@ -51,6 +51,30 @@ def logout():
     flash('You have been logged out', 'success')
     return redirect(url_for('index'))
 
+@app.route('/profile', methods=['GET', 'POST'])
+@login_required
+def profile():
+    form = ProfileEditForm(original_username=current_user.username)
+    if form.validate_on_submit():
+        # Update username if it has changed
+        if form.username.data != current_user.username:
+            current_user.username = form.username.data
+
+        # Update password if a new one is provided
+        if form.password.data:
+            current_user.password_hash = bcrypt.generate_password_hash(form.password.data)
+
+        db.session.commit()
+
+        # Re-login the user to update the session
+        login_user(current_user)
+
+        flash('Your profile has been updated!', 'success')
+        return redirect(url_for('index'))
+
+    # Pre-fill the form with the current user's data
+    form.username.data = current_user.username
+    return render_template('profile.html', form=form)
 
 @app.route('/groups', methods=['GET', 'POST'])
 @login_required

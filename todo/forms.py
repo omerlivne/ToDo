@@ -29,6 +29,31 @@ class LoginForm(FlaskForm):
     password = PasswordField('Password', validators=[DataRequired()])
     submit = SubmitField('Login')
 
+class ProfileEditForm(FlaskForm):
+    username = StringField('Username',
+                           validators=[
+                               DataRequired(),
+                               Regexp('^[0-9A-Za-z]{4,12}$',
+                                      message="Username must be 4 to 12 characters long and contain only letters and digits")
+                           ])
+    password = PasswordField('New Password',
+                             validators=[
+                                 Optional(),
+                                 Regexp('^(?=.*[0-9])(?=.*[A-Z])(?=.*[a-z])[0-9A-Za-z]{8,16}$',
+                                        message="Password must be 8 to 16 characters long and contain at least one uppercase letter, one lowercase letter and one digit")
+                             ])
+    confirm_password = PasswordField('Confirm New Password', validators=[EqualTo('password')])
+    submit = SubmitField('Update Profile')
+
+    def __init__(self, original_username, *args, **kwargs):
+        super(ProfileEditForm, self).__init__(*args, **kwargs)
+        self.original_username = original_username
+
+    def validate_username(self, username):
+        if username.data != self.original_username:
+            if User.query.filter_by(username=username.data).first():
+                raise ValidationError('That username is already taken. Please choose a different one')
+
 class GroupForm(FlaskForm):
     name = StringField('Name', validators=[DataRequired()])
     description = TextAreaField('Description', validators=[Optional()])

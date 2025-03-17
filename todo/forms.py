@@ -1,6 +1,6 @@
 # todo\forms.py
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField, TextAreaField, DateTimeLocalField
+from wtforms import StringField, PasswordField, SubmitField, TextAreaField, DateTimeLocalField, SelectField
 from wtforms.validators import DataRequired, EqualTo, Regexp, ValidationError, Optional
 from todo.models import User
 
@@ -59,15 +59,25 @@ class GroupForm(FlaskForm):
     description = TextAreaField('Description', validators=[Optional()])
     submit = SubmitField('Create Group')
 
+class GroupEditForm(FlaskForm):
+    name = StringField('Name', validators=[DataRequired()])
+    description = TextAreaField('Description', validators=[Optional()])
+    submit = SubmitField('Update Group')
+
 class TaskForm(FlaskForm):
     name = StringField('Name', validators=[DataRequired()])
     description = TextAreaField('Description', validators=[Optional()])
     due_date = DateTimeLocalField('Due Date', validators=[Optional()])
     submit = SubmitField('Create Task')
 
-class GroupEditForm(FlaskForm):
+class TaskEditForm(FlaskForm):
     name = StringField('Name', validators=[DataRequired()])
     description = TextAreaField('Description', validators=[Optional()])
-    submit = SubmitField('Update Group')
-
+    due_date = DateTimeLocalField('Due Date', validators=[Optional()])
+    status = SelectField('Status', choices=[
+        ('Pending', 'Pending'),
+        ('In Progress', 'In Progress'),
+        ('Completed', 'Completed')
+    ], validators=[DataRequired()])
+    submit = SubmitField('Update Task')
 

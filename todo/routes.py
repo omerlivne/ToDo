@@ -1,7 +1,7 @@
 # todo\routes.py
 from flask import render_template, redirect, url_for, flash, request
 from flask_login import login_user, logout_user, login_required, current_user
-from todo.forms import LoginForm, RegistrationForm, GroupForm, TaskForm, GroupEditForm, ProfileEditForm
+from todo.forms import LoginForm, RegistrationForm, GroupForm, TaskForm, GroupEditForm, ProfileEditForm, TaskEditForm
 from todo.models import User, Task, Group, UserGroup, bcrypt
 from todo import app, db
 
@@ -120,33 +120,6 @@ def groups():
 
     # Display the list of groups
     return render_template('groups.html', form=form, groups=sorted_groups)
-@app.route('/groups/<int:group_id>', methods=['GET', 'POST'])
-@login_required
-def tasks(group_id):
-    group = Group.query.get(group_id)
-    if not group:
-        flash('Group not found', 'danger')
-        return redirect(url_for('groups'))
-    if current_user.username not in group.members:
-        flash('You are not a member of this group', 'danger')
-        return redirect(url_for('groups'))
-
-    form = TaskForm()
-    if form.validate_on_submit():
-        task = Task(
-            name=form.name.data,
-            description=form.description.data,
-            due_date=form.due_date.data,
-            author=current_user.username,
-            group_id=group_id
-        )
-        db.session.add(task)
-        db.session.commit()
-        flash('Task created successfully!', 'success')
-        return redirect(f"{url_for('groups')}/{group_id}")
-
-    return render_template('tasks.html', form=form, tasks=Task.query.filter_by(group_id=group_id).all())
-
 
 @app.route('/groups/<int:group_id>/manage', methods=['GET', 'POST'])
 @login_required
@@ -262,3 +235,73 @@ def manage_group(group_id):
     ))
 
     return render_template('manage_group.html', form=form, group=group, members=members)
+
+@app.route('/groups/<int:group_id>', methods=['GET', 'POST'])
+@login_required
+def tasks(group_id):
+    group = Group.query.get(group_id)
+    if not group:
+        flash('Group not found', 'danger')
+        return redirect(url_for('groups'))
+    if current_user.username not in group.members:
+        flash('You are not a member of this group', 'danger')
+        return redirect(url_for('groups'))
+
+    form = TaskForm()
+    if form.validate_on_submit():
+        task = Task(
+            name=form.name.data,
+            description=form.description.data,
+            due_date=form.due_date.data,
+            author=current_user.username,
+            group_id=group_id
+        )
+        db.session.add(task)
+        db.session.commit()
+        flash('Task created successfully!', 'success')
+        return redirect(f"{url_for('groups')}/{group_id}")
+
+    return render_template('tasks.html', form=form, tasks=Task.query.filter_by(group_id=group_id).all())
+
+
+@app.route('/tasks/<int:task_id>/edit', methods=['GET', 'POST'])
+@login_required
+def edit_task(task_id):
+    task = Task.query.get_or_404(task_id)
+    group = Group.query.get(task.group_id)
+
+    # Authorization check
+    if current_user.username != task.author and not group.is_admin(current_user.username):
+        flash('You are not authorized to edit this task', 'danger')
+        return redirect(url_for('tasks', group_id=task.group_id))
+
+    form = TaskEditForm(obj=task)
+
+    if form.validate_on_submit():
+        task.name = form.name.data
+        task.description = form.description.data
+        task.due_date = form.due_date.data
+        task.status = form.status.data
+        db.session.commit()
+        flash('Task updated successfully!', 'success')
+        return redirect(url_for('tasks', group_id=task.group_id))
+
+    return render_template('edit_task.html', form=form, task=task)
+
+
+@app.route('/tasks/<int:task_id>/delete', methods=['POST'])
+@login_required
+def delete_task(task_id):
+    task = Task.query.get_or_404(task_id)
+    group = Group.query.get(task.group_id)
+    group_id = task.group_id
+
+    # Authorization check
+    if current_user.username != task.author and not group.is_admin(current_user.username):
+        flash('You are not authorized to delete this task', 'danger')
+        return redirect(url_for('tasks', group_id=group_id))
+
+    db.session.delete(task)
+    db.session.commit()
+    flash('Task deleted successfully!', 'success')
+    return redirect(url_for('tasks', group_id=group_id))

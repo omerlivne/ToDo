@@ -3,6 +3,7 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField, TextAreaField, DateTimeLocalField, SelectField
 from wtforms.validators import DataRequired, EqualTo, Regexp, ValidationError, Optional
 from todo.models import User
+from datetime import datetime
 
 class RegistrationForm(FlaskForm):
     username = StringField('Username',
@@ -67,17 +68,33 @@ class GroupEditForm(FlaskForm):
 class TaskForm(FlaskForm):
     name = StringField('Name', validators=[DataRequired()])
     description = TextAreaField('Description', validators=[Optional()])
-    due_date = DateTimeLocalField('Due Date', validators=[Optional()])
+    due_date = DateTimeLocalField('Due Date',
+        validators=[Optional()],
+        format='%Y-%m-%dT%H:%M',
+        render_kw={'min': datetime.now().strftime('%Y-%m-%dT%H:%M')}
+    )
     submit = SubmitField('Create Task')
+
+    def validate_due_date(self, field):
+        if field.data and field.data < datetime.now():
+            raise ValidationError("Due date cannot be in the past")
 
 class TaskEditForm(FlaskForm):
     name = StringField('Name', validators=[DataRequired()])
     description = TextAreaField('Description', validators=[Optional()])
-    due_date = DateTimeLocalField('Due Date', validators=[Optional()])
+    due_date = DateTimeLocalField('Due Date',
+        validators=[Optional()],
+        format='%Y-%m-%dT%H:%M',
+        render_kw={'min': datetime.now().strftime('%Y-%m-%dT%H:%M')}
+    )
     status = SelectField('Status', choices=[
         ('Pending', 'Pending'),
         ('In Progress', 'In Progress'),
         ('Completed', 'Completed')
     ], validators=[DataRequired()])
     submit = SubmitField('Update Task')
+
+    def validate_due_date(self, field):
+        if field.data and field.data < datetime.now():
+            raise ValidationError("Due date cannot be in the past")
 

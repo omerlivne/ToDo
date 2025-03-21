@@ -261,7 +261,11 @@ def tasks(group_id):
         flash('Task created successfully!', 'success')
         return redirect(f"{url_for('groups')}/{group_id}")
 
-    return render_template('tasks.html', form=form, tasks=Task.query.filter_by(group_id=group_id).all())
+    return render_template('tasks.html',
+                           form=form,
+                           tasks=Task.query.filter_by(group_id=group_id).all(),
+                           group=group
+                           )  # Add this line
 
 
 @app.route('/tasks/<int:task_id>/edit', methods=['GET', 'POST'])
@@ -270,23 +274,39 @@ def edit_task(task_id):
     task = Task.query.get_or_404(task_id)
     group = Group.query.get(task.group_id)
 
-    # Authorization check
-    if current_user.username != task.author and not group.is_admin(current_user.username):
-        flash('You are not authorized to edit this task', 'danger')
-        return redirect(url_for('tasks', group_id=task.group_id))
+    if current_user.username not in group.members:
+        flash('You are not a member of this group', 'danger')
+        return redirect(url_for('groups'))
 
     form = TaskEditForm(obj=task)
 
     if form.validate_on_submit():
-        task.name = form.name.data
-        task.description = form.description.data
-        task.due_date = form.due_date.data
+        is_authorized = current_user.username == task.author or current_user.username == group.owner or group.is_admin(
+            current_user.username
+            )
+
+        # Only update restricted fields if authorized
+        if is_authorized:
+            task.name = form.name.data
+            task.description = form.description.data
+            task.due_date = form.due_date.data
+            field_count = 3  # Track if we're updating more than just status
+        else:
+            field_count = 0
+
+        # Always update status
         task.status = form.status.data
         db.session.commit()
-        flash('Task updated successfully!', 'success')
+
+        # Different flash messages based on authorization
+        if is_authorized or field_count > 0:
+            flash('Task updated successfully!', 'success')
+        else:
+            flash('Task status updated successfully!', 'success')
+
         return redirect(url_for('tasks', group_id=task.group_id))
 
-    return render_template('edit_task.html', form=form, task=task)
+    return render_template('edit_task.html', form=form, task=task, group=group)
 
 
 @app.route('/tasks/<int:task_id>/delete', methods=['POST'])
@@ -297,7 +317,9 @@ def delete_task(task_id):
     group_id = task.group_id
 
     # Authorization check
-    if current_user.username != task.author and not group.is_admin(current_user.username):
+    if not (current_user.username == task.author or
+            current_user.username == group.owner or
+            group.is_admin(current_user.username)):
         flash('You are not authorized to delete this task', 'danger')
         return redirect(url_for('tasks', group_id=group_id))
 

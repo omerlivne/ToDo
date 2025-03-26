@@ -4,7 +4,7 @@ from flask_login import login_user, logout_user, login_required, current_user
 from todo.forms import LoginForm, RegistrationForm, GroupForm, TaskForm, GroupEditForm, ProfileEditForm, TaskEditForm
 from todo.models import User, Task, Group, UserGroup, bcrypt
 from todo import app, db
-
+from sqlalchemy import func, case, asc, desc
 
 @app.route('/')
 @login_required
@@ -236,6 +236,7 @@ def manage_group(group_id):
 
     return render_template('manage_group.html', form=form, group=group, members=members)
 
+
 @app.route('/groups/<int:group_id>', methods=['GET', 'POST'])
 @login_required
 def tasks(group_id):
@@ -259,14 +260,54 @@ def tasks(group_id):
         db.session.add(task)
         db.session.commit()
         flash('Task created successfully!', 'success')
-        return redirect(f"{url_for('groups')}/{group_id}")
+        return redirect(url_for('tasks', group_id=group_id))
+
+    # Sorting logic
+    sort = request.args.get('sort', 'due_date')
+    tasks_query = Task.query.filter_by(group_id=group_id)
+
+    if sort == 'name':
+        tasks_query = tasks_query.order_by(
+            func.lower(Task.name).asc()
+        )
+
+    elif sort == 'due_date':
+        if db.engine.name == 'postgresql':
+            tasks_query = tasks_query.order_by(
+                asc(Task.due_date).nulls_last(),
+                func.lower(Task.name).asc()  # Secondary sort
+        )
+        else:
+            tasks_query = tasks_query.order_by(
+                case((Task.due_date.is_(None), 1), else_=0).asc(),
+                Task.due_date.asc(),
+                func.lower(Task.name).asc()  # Secondary sort
+        )
+    elif sort == 'status':
+        status_order = case(
+            (Task.status == 'Pending', 0),
+            (Task.status == 'In Progress', 1),
+            (Task.status == 'Completed', 2),
+            else_=3
+    )
+
+        tasks_query = tasks_query.order_by(
+            status_order.asc(),
+            func.lower(Task.name).asc()  # Secondary sort
+    )
+    elif sort == 'creator':
+        tasks_query = tasks_query.order_by(
+            func.lower(Task.author).asc(),
+            func.lower(Task.name).asc()  # Secondary sort
+    )
+
+    tasks = tasks_query.all()
 
     return render_template('tasks.html',
-                           form=form,
-                           tasks=Task.query.filter_by(group_id=group_id).all(),
-                           group=group
-                           )  # Add this line
-
+                         form=form,
+                         tasks=tasks,
+                         group=group,
+                         sort=sort)
 
 @app.route('/tasks/<int:task_id>/edit', methods=['GET', 'POST'])
 @login_required

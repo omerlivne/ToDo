@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+
+{% block title %}{{ group.name }} Tasks{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Tasks List -->
+    <div class="col-md-6">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2>{{ group.name }} Tasks</h2>
+            <form method="GET" class="ms-3">
+                <div class="input-group">
+                    <label class="input-group-text" for="sort">Sort by:</label>
+                    <select class="form-select" id="sort" name="sort" onchange="this.form.submit()">
+                        <option value="due_date" {% if sort == 'due_date' %}selected{% endif %}>Due Date</option>
+                        <option value="name" {% if sort == 'name' %}selected{% endif %}>Name</option>
+                        <option value="status" {% if sort == 'status' %}selected{% endif %}>Status</option>
+                        <option value="creator" {% if sort == 'creator' %}selected{% endif %}>Creator</option>
+                    </select>
+                </div>
+            </form>
+        </div>
+
+        <div class="list-group">
+            {% for task in tasks %}
+                <a href="{{ url_for('tasks.edit_task', task_id=task.id) }}"
+                   class="list-group-item list-group-item-action">
+                    <div class="d-flex justify-content-between">
+                        <div class="flex-grow-1 me-3">
+                            <h5 class="mb-1">{{ task.name }}</h5>
+                            <div class="d-flex gap-2">
+                                <span class="badge bg-{% if task.status == 'Completed' %}success
+                                                    {% elif task.status == 'In Progress' %}warning
+                                                    {% else %}secondary{% endif %}">
+                                    {{ task.status }}
+                                </span>
+                                {% if task.due_date %}
+                                    <span class="badge bg-light text-dark">
+                                        Due: {{ task.due_date.strftime('%Y-%m-%d %H:%M') }}
+                                    </span>
+                                {% endif %}
+                                <span class="badge bg-secondary">
+                                    By: {{ task.author }}
+                                </span>
+                            </div>
+                        </div>
+                        {% if current_user.username == task.author
+                              or current_user.username == group.owner
+                              or group.is_admin(current_user.username) %}
+                            <form method="POST"
+                                  action="{{ url_for('tasks.manage_tasks', group_id=group.id) }}"
+                                  onclick="event.stopPropagation()">
+                                <input type="hidden" name="delete_task" value="{{ task.id }}">
+                                <button type="submit" class="btn btn-danger btn-sm align-self-center"
+                                        onclick="return confirm('Delete this task permanently?')">
+                                    Delete
+                                </button>
+                            </form>
+                        {% endif %}
+                    </div>
+                </a>
+            {% else %}
+                <div class="list-group-item text-center">No tasks found. Create one!</div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Create Task Form -->
+    <div class="col-md-6">
+        <h2>Create New Task</h2>
+        <div class="card">
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('tasks.manage_tasks', group_id=group.id) }}">
+                    {{ form.hidden_tag() }}
+                    <div class="mb-3">
+                        {{ form.name.label(class="form-label") }}
+                        {{ form.name(class="form-control") }}
+                        {% for error in form.name.errors %}
+                            <div class="invalid-feedback d-block">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.description.label(class="form-label") }}
+                        {{ form.description(class="form-control") }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.due_date.label(class="form-label") }}
+                        {{ form.due_date(class="form-control") }}
+                        {% for error in form.due_date.errors %}
+                            <div class="invalid-feedback d-block">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    <div class="d-grid">
+                        {{ form.submit(class="btn btn-success") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

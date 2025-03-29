@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %}Edit {{ task.name }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <h2 class="text-center mb-4">{{ task.name }}</h2>
+        <form method="POST" action="{{ url_for('tasks.edit_task', task_id=task.id) }}">
+            {{ form.hidden_tag() }}
+            
+            <!-- Name Field -->
+            <div class="mb-3">
+                {{ form.name.label(class="form-label") }}
+                {{ form.name(class="form-control", readonly=not can_edit) }}
+                {% for error in form.name.errors %}
+                    <div class="invalid-feedback d-block">{{ error }}</div>
+                {% endfor %}
+            </div>
+
+            <!-- Description Field -->
+            <div class="mb-3">
+                {{ form.description.label(class="form-label") }}
+                {{ form.description(class="form-control", readonly=not can_edit) }}
+                {% for error in form.description.errors %}
+                    <div class="invalid-feedback d-block">{{ error }}</div>
+                {% endfor %}
+            </div>
+
+            <!-- Due Date Field -->
+            <div class="mb-3">
+                {{ form.due_date.label(class="form-label") }}
+                {{ form.due_date(class="form-control", readonly=not can_edit) }}
+                {% for error in form.due_date.errors %}
+                    <div class="invalid-feedback d-block">{{ error }}</div>
+                {% endfor %}
+            </div>
+
+            <!-- Status Field -->
+            <div class="mb-4">
+                {{ form.status.label(class="form-label") }}
+                {{ form.status(class="form-select") }}
+            </div>
+
+            <div class="d-grid">
+                <button type="submit" class="btn btn-primary">Update Task</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

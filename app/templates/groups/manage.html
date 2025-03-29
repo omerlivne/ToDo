@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block title %}Manage {{ group.name }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <h2 class="text-center mb-4">{{ group.name }}</h2>
+        
+        <!-- Group Details Form -->
+        <form method="POST" action="{{ url_for('groups.manage_single_group', group_id=group.id) }}">
+            {{ form.hidden_tag() }}
+            <input type="hidden" name="remove_member_username" id="removeMemberField">
+
+            <!-- Name/Description Fields -->
+            <div class="mb-3">
+                {{ form.name.label(class="form-label") }}
+                {{ form.name(class="form-control", readonly=not (current_user.username == group.owner or group.is_admin(current_user.username))) }}
+            </div>
+            <div class="mb-3">
+                {{ form.description.label(class="form-label") }}
+                {{ form.description(class="form-control", readonly=not (current_user.username == group.owner or group.is_admin(current_user.username))) }}
+            </div>
+
+            <!-- Members List -->
+            <h4>Members</h4>
+            <ul class="list-group mb-4">
+                {% for member in members %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span>
+                            {{ member.display_name }}
+                            <small class="text-muted">({{ member.role }})</small>
+                        </span>
+                        <div>
+                            {% if (current_user.username == group.owner or (group.is_admin(current_user.username)) and member.role == "Member")
+                               and member.username != current_user.username %}
+                                <button type="button" class="btn btn-sm btn-danger" 
+                                        onclick="document.getElementById('removeMemberField').value='{{ member.username }}'; this.form.submit()">
+                                    Remove
+                                </button>
+                            {% endif %}
+                            {% if current_user.username == group.owner and member.role != "Owner" %}
+                                <div class="form-check form-switch ms-3">
+                                    <input class="form-check-input" type="checkbox" role="switch" 
+                                           id="adminSwitch{{ loop.index }}" name="admins" 
+                                           value="{{ member.username }}" {% if member.role == "Admin" %}checked{% endif %}>
+                                    <label class="form-check-label" for="adminSwitch{{ loop.index }}">Admin</label>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </li>
+                {% endfor %}
+            </ul>
+
+            <!-- Add Member Section -->
+            <h4>Add Member</h4>
+            <div class="input-group mb-4">
+                <label for="new_member_username" class="visually-hidden">Member username</label>
+                <input type="text"
+                       class="form-control"
+                       id="new_member_username"
+                       name="new_member_username"
+                       placeholder="Enter username">
+                <button type="submit" class="btn btn-primary">Add</button>
+            </div>
+
+            <div class="d-grid">
+                <button type="submit" class="btn btn-success">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

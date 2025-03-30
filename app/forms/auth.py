@@ -4,28 +4,30 @@ from wtforms import StringField, PasswordField, SubmitField
 from wtforms.validators import DataRequired, Regexp, EqualTo, ValidationError
 from app.models import User
 
-
 class RegistrationForm(FlaskForm):
+    """Validates registration inputs. Ensures username/password rules and uniqueness."""
     username = StringField("Username", validators=[
         DataRequired(),
-        Regexp("^[0-9A-Za-z]{4,12}$",
-               message="Username rules: 4-12 chars, letters/numbers only")
+        Regexp(r"^[0-9A-Za-z]{4,12}$", message="Username: 4-12 alphanumeric characters.")
     ])
     password = PasswordField("Password", validators=[
         DataRequired(),
-        Regexp("^(?=.*[0-9])(?=.*[A-Z])(?=.*[a-z])[0-9A-Za-z]{8,16}$",
-               message="Password rules: 8-16 chars, 1 uppercase, 1 lowercase, 1 digit, letters/numbers only")
+        Regexp(r"^(?=.*[0-9])(?=.*[A-Z])(?=.*[a-z])[0-9A-Za-z]{8,16}$",
+               message="Password: 8-16 alphanumeric characters with 1 uppercase, 1 lowercase, and 1 digit.")
     ])
     confirm_password = PasswordField("Confirm Password", validators=[
-        DataRequired(), EqualTo("password")
+        DataRequired(),
+        EqualTo("password", message="Passwords must match.")
     ])
     submit = SubmitField("Register")
 
-    def validate_username(self, username):
-        if User.query.filter_by(username=username.data).first():
-            raise ValidationError("Username already taken")
+    def validate_username(self, field) -> None:
+        """Ensures username uniqueness at the form layer to prevent duplicates early."""
+        if User.query.filter_by(username=field.data).first():
+            raise ValidationError("Username already taken. Choose another.")
 
 class LoginForm(FlaskForm):
+    """Validates login credentials. No security checks—relies on model for hashing."""
     username = StringField("Username", validators=[DataRequired()])
     password = PasswordField("Password", validators=[DataRequired()])
     submit = SubmitField("Login")

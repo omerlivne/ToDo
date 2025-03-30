@@ -12,12 +12,11 @@ class ProfileEditForm(FlaskForm):
         Regexp(r"^[0-9A-Za-z]{4,12}$", message="Username: 4-12 alphanumeric characters.")
     ])
     password = PasswordField("Password", validators=[
-        DataRequired(),
+        Optional(),
         Regexp(r"^(?=.*[0-9])(?=.*[A-Z])(?=.*[a-z])[0-9A-Za-z]{8,16}$",
                message="Password: 8-16 alphanumeric characters with 1 uppercase, 1 lowercase, and 1 digit.")
     ])
     confirm_password = PasswordField("Confirm Password", validators=[
-        Optional(),
         EqualTo("password", message="Passwords must match.")
     ])
     submit = SubmitField("Update Profile")

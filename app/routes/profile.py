@@ -2,7 +2,6 @@
 from flask import Blueprint, render_template, redirect, url_for, flash
 from flask_login import current_user, login_required
 from app.forms.profile import ProfileEditForm
-from app.models.user import User
 
 profile_bp = Blueprint("profile", __name__)
 

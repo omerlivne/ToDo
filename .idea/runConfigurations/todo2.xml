@@ -4,7 +4,7 @@
     <module name="todo" />
     <option name="target" value="$PROJECT_DIR$/app.py" />
     <option name="targetType" value="PATH" />
-    <option name="ENV_FILES" value="$PROJECT_DIR$/.venv" />
+    <option name="ENV_FILES" value="" />
     <option name="INTERPRETER_OPTIONS" value="" />
     <option name="PARENT_ENVS" value="true" />
     <envs>

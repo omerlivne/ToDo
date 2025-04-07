@@ -8,7 +8,7 @@
     <option name="INTERPRETER_OPTIONS" value="" />
     <option name="PARENT_ENVS" value="true" />
     <envs>
-      <env name="FLASK_APP" value="app.py" />
+      <env name="FLASK_APP" value="wsgi.py" />
       <env name="FLASK_ENV" value="production" />
     </envs>
     <option name="SDK_HOME" value="" />

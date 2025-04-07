@@ -2,7 +2,7 @@
   <configuration default="false" name="todo2" type="Python.FlaskServer">
     <option name="flaskEnv" value="production" />
     <module name="todo" />
-    <option name="target" value="$PROJECT_DIR$/app.py" />
+    <option name="target" value="$PROJECT_DIR$/wsgi.py" />
     <option name="targetType" value="PATH" />
     <option name="ENV_FILES" value="" />
     <option name="INTERPRETER_OPTIONS" value="" />

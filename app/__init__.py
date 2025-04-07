@@ -1,4 +1,4 @@
-# app/__init__.py
+# __init__.py
 from flask import Flask
 from .config import Config
 from .extensions import db, login_manager, migrate

@@ -6,14 +6,15 @@ class Task(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     description = db.Column(db.Text)
-    status = db.Column(db.String(20), default="Pending")
+    status = db.Column(db.String(20), default="Pending", nullable=False)
     due_date = db.Column(db.DateTime)
-    author = db.Column(db.String(12), db.ForeignKey("users.id"), nullable=False)
+    author_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
     group_id = db.Column(db.Integer, db.ForeignKey("groups.id"), nullable=False)
 
-    def __init__(self, name, description, due_date, author, group_id):
+    def __init__(self, name, description, due_date, author_id, group_id):
         self.name = name
         self.description = description
         self.due_date = due_date
-        self.author = author
+        self.author_id = author_id
         self.group_id = group_id
+

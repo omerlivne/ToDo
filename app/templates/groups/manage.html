@@ -6,66 +6,104 @@
 <div class="row">
     <div class="col-md-8 offset-md-2">
         <h2 class="text-center mb-4">{{ group.name }}</h2>
-        
-        <!-- Group Details Form -->
+
+        <!-- Group Management Form -->
         <form method="POST" action="{{ url_for('groups.manage_single_group', group_id=group.id) }}">
             {{ form.hidden_tag() }}
             <input type="hidden" name="remove_member_username" id="removeMemberField">
 
-            <!-- Name/Description Fields -->
-            <div class="mb-3">
-                {{ form.name.label(class="form-label") }}
-                {{ form.name(class="form-control", readonly=not (current_user.username == group.owner or group.is_admin(current_user.username))) }}
-            </div>
-            <div class="mb-3">
-                {{ form.description.label(class="form-label") }}
-                {{ form.description(class="form-control", readonly=not (current_user.username == group.owner or group.is_admin(current_user.username))) }}
+            <!-- Group Details Section -->
+            <div class="card mb-4">
+                <div class="card-header">Group Settings</div>
+                <div class="card-body">
+                    <!-- Name Field -->
+                    <div class="mb-3">
+                        {{ form.name.label(class="form-label") }}
+                        {{ form.name(class="form-control", readonly=not (group.is_owner(current_user.id) or current_user in group.admins)) }}
+                        {% for error in form.name.errors %}
+                        <div class="invalid-feedback d-block">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Description Field -->
+                    <div class="mb-3">
+                        {{ form.description.label(class="form-label") }}
+                        {{ form.description(class="form-control",
+                                          readonly=not (group.is_owner(current_user.id) or current_user in group.admins)) }}
+
+                    </div>
+                </div>
             </div>
 
-            <!-- Members List -->
-            <h4>Members</h4>
-            <ul class="list-group mb-4">
-                {% for member in members %}
-                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                        <span>
-                            {{ member.display_name }}
-                            <small class="text-muted">({{ member.role }})</small>
-                        </span>
-                        <div>
-                            {% if (current_user.username == group.owner or (group.is_admin(current_user.username)) and member.role == "Member")
-                               and member.username != current_user.username %}
-                                <button type="button" class="btn btn-sm btn-danger" 
-                                        onclick="document.getElementById('removeMemberField').value='{{ member.username }}'; this.form.submit()">
-                                    Remove
-                                </button>
-                            {% endif %}
-                            {% if current_user.username == group.owner and member.role != "Owner" %}
-                                <div class="form-check form-switch ms-3">
-                                    <input class="form-check-input" type="checkbox" role="switch" 
-                                           id="adminSwitch{{ loop.index }}" name="admins" 
-                                           value="{{ member.username }}" {% if member.role == "Admin" %}checked{% endif %}>
-                                    <label class="form-check-label" for="adminSwitch{{ loop.index }}">Admin</label>
-                                </div>
-                            {% endif %}
-                        </div>
-                    </li>
-                {% endfor %}
-            </ul>
+            <!-- Members Section -->
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <span>Members</span>
+                    <span class="badge bg-primary rounded-pill">{{ members|length }}</span>
+                </div>
+
+                <ul class="list-group list-group-flush">
+                    {% for member in members %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                {{ member.username }}
+                                {% if member.is_you %}
+                                    <span class="badge bg-info">You</span>
+                                {% endif %}
+                                <small class="text-muted">({{ member.role }})</small>
+                            </div>
+
+                            <!-- Member Actions -->
+                            <div class="d-flex align-items-center gap-2">
+                                {% if (group.is_owner(current_user.id)
+                                    or (current_user in group.admins and member.role == 'Member')) %}
+                                    {% if not member.is_you %}
+                                        <button type="button" class="btn btn-sm btn-danger"
+                                                onclick="document.getElementById('removeMemberField').value='{{ member.username }}'; this.form.submit()">
+                                            Remove
+                                        </button>
+                                    {% endif %}
+                                {% endif %}
+
+                                {% if group.is_owner(current_user.id) and not member.is_you %}
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" role="switch"
+                                               id="adminSwitch{{ loop.index }}" name="admins"
+                                               value="{{ member.id }}"
+                                               {% if member.role == 'Admin' %}checked{% endif %}>
+                                        <label class="form-check-label" for="adminSwitch{{ loop.index }}">
+                                            Admin
+                                        </label>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
 
             <!-- Add Member Section -->
-            <h4>Add Member</h4>
-            <div class="input-group mb-4">
-                <label for="new_member_username" class="visually-hidden">Member username</label>
-                <input type="text"
-                       class="form-control"
-                       id="new_member_username"
-                       name="new_member_username"
-                       placeholder="Enter username">
-                <button type="submit" class="btn btn-primary">Add</button>
+            <div class="card mb-4">
+                <div class="card-header">Add New Member</div>
+                <div class="card-body">
+                    <div class="input-group">
+                        <input type="text" class="form-control"
+                           id="newMemberUsername"
+                           name="new_member_username"
+                           placeholder="Enter username to add"
+                           aria-label="Username to add">
+                        <button type="submit" class="btn btn-primary">
+                            Add Member
+                        </button>
+                    </div>
+                </div>
             </div>
 
+            <!-- Save Changes Button -->
             <div class="d-grid">
-                <button type="submit" class="btn btn-success">Save Changes</button>
+                <button type="submit" class="btn btn-success btn-lg">
+                    Save All Changes
+                </button>
             </div>
         </form>
     </div>

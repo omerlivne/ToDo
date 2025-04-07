@@ -5,10 +5,12 @@ from wtforms.validators import DataRequired, Regexp, EqualTo, ValidationError
 from app.models import User
 
 class RegistrationForm(FlaskForm):
-    """Validates registration inputs. Ensures username/password rules and uniqueness."""
+    """Validates registration inputs and username availability."""
+
     username = StringField("Username", validators=[
         DataRequired(),
-        Regexp(r"^[0-9A-Za-z]{4,12}$", message="Username: 4-12 alphanumeric characters.")
+        Regexp(r"^[0-9A-Za-z]{4,12}$",
+               message="Username: 4-12 alphanumeric characters.")
     ])
     password = PasswordField("Password", validators=[
         DataRequired(),
@@ -21,14 +23,14 @@ class RegistrationForm(FlaskForm):
     ])
     submit = SubmitField("Register")
 
-    def validate_username(self, field) -> None:
-        """Ensures username uniqueness at the form layer to prevent duplicates early."""
+    def validate_username(self, field: StringField) -> None:
+        """Check username uniqueness before database commit."""
         if User.query.filter_by(username=field.data).first():
-            raise ValidationError("Username already taken. Choose another.")
+            raise ValidationError("Username unavailable. Choose another.")
 
 class LoginForm(FlaskForm):
-    """Validates login credentials. No security checks—relies on model for hashing."""
+    """Validates login credential formatting."""
+
     username = StringField("Username", validators=[DataRequired()])
     password = PasswordField("Password", validators=[DataRequired()])
     submit = SubmitField("Login")
-

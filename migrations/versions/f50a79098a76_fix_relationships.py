@@ -1,8 +1,8 @@
-"""Fix group display
+"""Fix relationships
 
-Revision ID: 0e213a57752d
+Revision ID: f50a79098a76
 Revises: 
-Create Date: 2025-03-30 23:46:44.352261
+Create Date: 2025-04-06 23:11:02.267848
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '0e213a57752d'
+revision = 'f50a79098a76'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -35,11 +35,11 @@ def upgrade():
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('name', sa.String(length=100), nullable=False),
     sa.Column('description', sa.Text(), nullable=True),
-    sa.Column('status', sa.String(length=20), nullable=True),
+    sa.Column('status', sa.String(length=20), nullable=False),
     sa.Column('due_date', sa.DateTime(), nullable=True),
-    sa.Column('author', sa.String(length=12), nullable=False),
+    sa.Column('author_id', sa.Integer(), nullable=False),
     sa.Column('group_id', sa.Integer(), nullable=False),
-    sa.ForeignKeyConstraint(['author'], ['users.id'], ),
+    sa.ForeignKeyConstraint(['author_id'], ['users.id'], ),
     sa.ForeignKeyConstraint(['group_id'], ['groups.id'], ),
     sa.PrimaryKeyConstraint('id')
     )

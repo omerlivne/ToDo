@@ -6,10 +6,11 @@ from flask_login import current_user
 from app.models import User
 
 class ProfileEditForm(FlaskForm):
-    """Validates profile updates. Ensures username format and password rules."""
+    """Validates profile updates for username and password changes."""
     username = StringField("Username", validators=[
         DataRequired(),
-        Regexp(r"^[0-9A-Za-z]{4,12}$", message="Username: 4-12 alphanumeric characters.")
+        Regexp(r"^[0-9A-Za-z]{4,12}$",
+               message="Username: 4-12 alphanumeric characters.")
     ])
     password = PasswordField("Password", validators=[
         Optional(),
@@ -22,7 +23,7 @@ class ProfileEditForm(FlaskForm):
     submit = SubmitField("Update Profile")
 
     def validate_username(self, field) -> None:
-        """Ensures new username is unique (if changed)."""
+        """Ensure new username is unique if changed."""
         if field.data != current_user.username:
             if User.query.filter_by(username=field.data).first():
                 raise ValidationError("Username already taken. Choose another.")

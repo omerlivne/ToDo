@@ -4,12 +4,13 @@
 
 {% block content %}
 <div class="row">
-    <!-- Groups List -->
+    <!-- Groups List Section -->
     <div class="col-md-6">
         <h2>Your Groups</h2>
         <div class="list-group">
             {% for group in groups %}
                 <div class="list-group-item list-group-item-action p-0">
+                    <!-- Group Link -->
                     <a href="{{ url_for('tasks.manage_tasks', group_id=group.id) }}"
                        class="text-decoration-none text-dark p-3 d-block">
                         <div class="d-flex justify-content-between align-items-center">
@@ -19,26 +20,31 @@
                         </div>
                     </a>
 
+                    <!-- Group Actions -->
                     <div class="position-absolute top-50 end-0 translate-middle-y pe-3">
-                        {% if current_user.username in group.members %}
-                            <a href="{{ url_for('groups.manage_single_group', group_id=group.id) }}"
-                               class="btn btn-warning btn-sm me-2"
-                               onclick="event.stopPropagation()">Manage</a>
-                        {% endif %}
-                        {% if current_user.username == group.owner %}
-                            <form method="POST"
-                                  action="{{ url_for('groups.manage_groups') }}"
+                        <!-- Management Button -->
+                        <a href="{{ url_for('groups.manage_single_group', group_id=group.id) }}"
+                           class="btn btn-warning btn-sm me-2"
+                           onclick="event.stopPropagation()">Manage</a>
+
+                        <!-- Delete Form (Owners Only) -->
+                        {% if group.is_owner(current_user.id) %}
+                            <form method="POST" action="{{ url_for('groups.manage_groups') }}"
                                   class="d-inline"
                                   onclick="event.stopPropagation()">
                                 <input type="hidden" name="remove_group" value="{{ group.id }}">
                                 <button type="submit" class="btn btn-danger btn-sm"
-                                        onclick="return confirm('Delete this group?')">Delete</button>
+                                        onclick="return confirm('Delete this group permanently?')">
+                                    Delete
+                                </button>
                             </form>
                         {% endif %}
                     </div>
                 </div>
             {% else %}
-                <div class="list-group-item text-center">No groups yet. Create one!</div>
+                <div class="list-group-item text-center py-4">
+                    No groups found. Create your first group!
+                </div>
             {% endfor %}
         </div>
     </div>
@@ -46,10 +52,12 @@
     <!-- Create Group Form -->
     <div class="col-md-6">
         <h2>Create New Group</h2>
-        <div class="card">
+        <div class="card shadow">
             <div class="card-body">
                 <form method="POST" action="{{ url_for('groups.manage_groups') }}">
                     {{ form.hidden_tag() }}
+
+                    <!-- Name Input -->
                     <div class="mb-3">
                         {{ form.name.label(class="form-label") }}
                         {{ form.name(class="form-control") }}
@@ -57,10 +65,14 @@
                             <div class="invalid-feedback d-block">{{ error }}</div>
                         {% endfor %}
                     </div>
+
+                    <!-- Description Input -->
                     <div class="mb-3">
                         {{ form.description.label(class="form-label") }}
-                        {{ form.description(class="form-control") }}
+                        {{ form.description(class="form-control", rows="3") }}
                     </div>
+
+                    <!-- Submit Button -->
                     <div class="d-grid">
                         {{ form.submit(class="btn btn-success") }}
                     </div>

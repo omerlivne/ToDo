@@ -23,7 +23,7 @@
 
         <div class="list-group">
             {% for task in tasks %}
-                <a href="{{ url_for('tasks.edit_task', task_id=task.id) }}"
+                <a href="{{ url_for('tasks.manage_single_task', task_id=task.id) }}"
                    class="list-group-item list-group-item-action">
                     <div class="d-flex justify-content-between">
                         <div class="flex-grow-1 me-3">
@@ -40,13 +40,13 @@
                                     </span>
                                 {% endif %}
                                 <span class="badge bg-secondary">
-                                    By: {{ task.author }}
+                                    By: {{ User.query.get(task.author_id).username }}
                                 </span>
                             </div>
                         </div>
-                        {% if current_user.username == task.author
-                              or current_user.username == group.owner
-                              or group.is_admin(current_user.username) %}
+                        {% if current_user.id == task.author_id
+                              or group.is_owner(current_user.id)
+                              or current_user in group.admins %}
                             <form method="POST"
                                   action="{{ url_for('tasks.manage_tasks', group_id=group.id) }}"
                                   onclick="event.stopPropagation()">

@@ -10,29 +10,39 @@
                 <h3 class="text-center">Login</h3>
             </div>
             <div class="card-body">
+                <!-- Login Form: POST to auth.login -->
                 <form method="POST" action="{{ url_for('auth.login') }}">
-                    {{ form.hidden_tag() }}
+                    {{ form.hidden_tag() }}  <!-- CSRF Protection -->
+
+                    <!-- Username Field -->
                     <div class="mb-3">
                         {{ form.username.label(class="form-label") }}
-                        {{ form.username(class="form-control") }}
-                        {% for error in form.username.errors %}
-                            <div class="text-danger">{{ error }}</div>
+                        {{ form.username(class="form-control", placeholder="Enter your username") }}
+                        {% for error in form.username.errors %}  <!-- Validation Errors -->
+                            <div class="text-danger small mt-1">{{ error }}</div>
                         {% endfor %}
                     </div>
+
+                    <!-- Password Field -->
                     <div class="mb-3">
                         {{ form.password.label(class="form-label") }}
-                        {{ form.password(class="form-control") }}
-                        {% for error in form.password.errors %}
-                            <div class="text-danger">{{ error }}</div>
+                        {{ form.password(class="form-control", placeholder="Enter your password") }}
+                        {% for error in form.password.errors %}  <!-- Validation Errors -->
+                            <div class="text-danger small mt-1">{{ error }}</div>
                         {% endfor %}
                     </div>
-                    <div class="d-grid">
-                        {{ form.submit(class="btn btn-primary") }}
+
+                    <!-- Submit Button -->
+                    <div class="d-grid gap-2">
+                        {{ form.submit(class="btn btn-primary btn-lg") }}  <!-- Triggers Auth Flow -->
                     </div>
                 </form>
             </div>
             <div class="card-footer text-center">
-                <small>Need an account? <a href="{{ url_for('auth.register') }}">Register here</a></small>
+                <small class="text-muted">
+                    Need an account?
+                    <a href="{{ url_for('auth.register') }}" class="text-decoration-none">Register here</a>
+                </small>
             </div>
         </div>
     </div>

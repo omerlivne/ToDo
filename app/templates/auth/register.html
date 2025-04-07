@@ -10,31 +10,40 @@
                 <h3 class="text-center">Register</h3>
             </div>
             <div class="card-body">
-                <form method="POST" action="{{ url_for('auth.register') }}">
-                    {{ form.hidden_tag() }}
+                <!-- Registration Form -->
+                <form method="POST" action="{{ url_for('auth.register') }}">  <!-- POST to auth.register route -->
+                    {{ form.hidden_tag() }}  <!-- CSRF Token (Security Essential) -->
+
+                    <!-- Username Input -->
                     <div class="mb-3">
-                        {{ form.username.label(class="form-label") }}
+                        {{ form.username.label(class="form-label") }}  <!-- Expects: 4-12 alphanumeric -->
                         {{ form.username(class="form-control") }}
-                        {% for error in form.username.errors %}
+                        {% for error in form.username.errors %}  <!-- Display regex/DB validation errors -->
                             <div class="text-danger">{{ error }}</div>
                         {% endfor %}
                     </div>
+
+                    <!-- Password Input -->
                     <div class="mb-3">
-                        {{ form.password.label(class="form-label") }}
+                        {{ form.password.label(class="form-label") }}  <!-- Expects: 8-16 chars w/1 uppercase, 1 lowercase, 1 digit -->
                         {{ form.password(class="form-control") }}
-                        {% for error in form.password.errors %}
+                        {% for error in form.password.errors %}  <!-- Display regex validation failures -->
                             <div class="text-danger">{{ error }}</div>
                         {% endfor %}
                     </div>
+
+                    <!-- Password Confirmation -->
                     <div class="mb-3">
-                        {{ form.confirm_password.label(class="form-label") }}
+                        {{ form.confirm_password.label(class="form-label") }}  <!-- Expects: Match password field -->
                         {{ form.confirm_password(class="form-control") }}
-                        {% for error in form.confirm_password.errors %}
+                        {% for error in form.confirm_password.errors %}  <!-- EqualTo validator errors -->
                             <div class="text-danger">{{ error }}</div>
                         {% endfor %}
                     </div>
+
+                    <!-- Submission -->
                     <div class="d-grid">
-                        {{ form.submit(class="btn btn-primary") }}
+                        {{ form.submit(class="btn btn-primary") }}  <!-- Triggers form validation -->
                     </div>
                 </form>
             </div>

@@ -1,4 +1,4 @@
-# ToDo Group Task Manager  
+# ToDo Manager  
 
 A collaborative task management web app built with Flask. Users can create groups, assign tasks, and manage permissions.  
 
@@ -22,8 +22,8 @@ A collaborative task management web app built with Flask. Users can create group
 ## Installation  
 1. Clone repository:
    ```bash
-   git clone https://github.com/yourusername/todo-group-manager.git
-   cd todo-group-manager
+   git clone https://github.com/yourusername/todo.git
+   cd todo
 2. Install dependencies:  
    ```bash  
    pip install -r requirements.txt  

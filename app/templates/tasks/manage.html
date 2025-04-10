@@ -32,7 +32,7 @@
             <!-- Due Date Field -->
             <div class="mb-3">
                 {{ form.due_date.label(class="form-label") }}
-                {{ form.due_date(class="form-control", readonly=not (group.is_owner(current_user.id) or current_user in group.admins) or current_user.id == task.author_id) }}
+                {{ form.due_date(class="form-control", readonly=not (group.is_owner(current_user.id) or current_user in group.admins or current_user.id == task.author_id)) }}
                 {% for error in form.due_date.errors %}
                     <div class="invalid-feedback d-block">{{ error }}</div>
                 {% endfor %}

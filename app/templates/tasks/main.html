@@ -39,9 +39,15 @@
                                         Due: {{ task.due_date.strftime('%Y-%m-%d %H:%M') }}
                                     </span>
                                 {% endif %}
-                                <span class="badge bg-secondary">
-                                    By: {{ User.query.get(task.author_id).username }}
-                                </span>
+                                {% if current_user.id == task.author_id %}
+                                    <span class="badge bg-info">
+                                        By: You
+                                    </span>
+                                {% else %}
+                                    <span class="badge bg-secondary">
+                                        By: {{ User.query.get(task.author_id).username }}
+                                    </span>
+                                {% endif %}
                             </div>
                         </div>
                         {% if current_user.id == task.author_id

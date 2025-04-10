@@ -44,7 +44,7 @@ class Group(db.Model):
 
     @property
     def members(self) -> list['User | None']:
-        """List of admin user."""
+        """List of all members."""
         return [ug.user for ug in self.group_users]
 
     @property

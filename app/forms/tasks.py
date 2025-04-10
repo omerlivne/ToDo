@@ -14,7 +14,6 @@ class TaskForm(FlaskForm):
     due_date = DateTimeLocalField('Due Date',
         validators=[Optional()],
         format='%Y-%m-%dT%H:%M',
-        render_kw={'min': datetime.now().strftime('%Y-%m-%dT%H:%M')}
     )
     submit = SubmitField('Create Task')
 

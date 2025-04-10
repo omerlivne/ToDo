@@ -29,6 +29,8 @@ def manage_tasks(group_id):
 
     # Create new task
     form = TaskForm()
+    form.due_date.render_kw = {'min': datetime.now().strftime('%Y-%m-%dT%H:%M')}
+
     if form.validate_on_submit():
         new_task = Task(
             name=form.name.data,
@@ -63,7 +65,11 @@ def manage_tasks(group_id):
             "due_date": t.due_date or datetime.max,
             "name": t.name.lower(),
             "status": ["Pending", "In Progress", "Completed"].index(t.status),
-            "creator": User.query.get(t.author_id).username.lower()
+            "creator": (
+                (0, User.query.get(t.author_id).username.lower())  # Your tasks come first
+                if t.author_id == current_user.id else
+                (1, User.query.get(t.author_id).username.lower())
+            )
         }.get(sort_by, "due_date"),  # Primary sort key
         t.name.lower()  # Secondary sort by name for all options
     )
@@ -98,12 +104,13 @@ def manage_single_task(task_id):
         return redirect(url_for("groups.manage_groups"))
 
     form = TaskEditForm(obj=task)
+    form.due_date.render_kw = {'min': datetime.now().strftime('%Y-%m-%dT%H:%M')}
 
     if form.validate_on_submit():
         modified = False
 
         if current_user.id == task.author_id or group.is_owner(current_user.id) or current_user in group.admins:
-            if form.name.data != task.name or form.description.data != group.description or form.due_date.data != task.due_date:
+            if form.name.data != task.name or form.description.data != task.description or form.due_date.data != task.due_date:
                 task.name = form.name.data
                 task.description = form.description.data
                 task.due_date = form.due_date.data

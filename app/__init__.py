@@ -1,7 +1,7 @@
 # __init__.py
 from flask import Flask
 from .config import Config
-from .extensions import db, login_manager, migrate
+from .extensions import db, login_manager, migrate, bcrypt
 
 def create_app(config_class=Config):
     app = Flask(__name__)
@@ -11,6 +11,7 @@ def create_app(config_class=Config):
     db.init_app(app)
     login_manager.init_app(app)
     migrate.init_app(app, db)
+    bcrypt.init_app(app)
 
     # Import blueprints
     from app.routes.index import index_bp

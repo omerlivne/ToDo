@@ -1,16 +1,41 @@
 {% extends "base.html" %}
 
-{% block title %}Home{% endblock %}
+{% block title %}Dashboard{% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-md-12 text-center">
-        <h1 class="display-4 mb-4">Welcome, {{ current_user.username }}!</h1>
-        <p class="lead">
-            Manage your tasks and groups efficiently.
-            <br>
-            Get started by visiting the <a href="{{ url_for('groups.manage_groups') }}">Groups</a> page.
-        </p>
+<div class="container mt-4">
+
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="p-5 mb-4 bg-light rounded-3 border shadow-sm">
+                <div class="container-fluid py-3 text-center">
+                    <h1 class="display-5 fw-bold">Welcome back, {{ current_user.username }}!</h1>
+                    <p class="fs-5">Your central hub for managing group tasks.</p>
+                </div>
+            </div>
+        </div>
     </div>
-</div>
+
+    <div class="row align-items-md-stretch text-center">
+
+        <div class="col-md-6 mb-4">
+            <div class="h-100 p-5 text-bg-primary rounded-3 shadow-sm d-flex flex-column justify-content-center">
+                <h2><i class="bi bi-collection-fill me-2"></i>Manage Your Groups</h2>
+                <p>View your existing groups, create new ones, manage members, and access group tasks.</p>
+                <a href="{{ url_for('groups.manage_groups') }}" class="btn btn-outline-light btn-lg px-4 mt-auto" type="button">Go to Groups</a>
+            </div>
+        </div>
+
+        <div class="col-md-6 mb-4">
+            <div class="h-100 p-5 bg-light border rounded-3 shadow-sm d-flex flex-column justify-content-center">
+                 <h2><i class="bi bi-person-fill-gear me-2"></i>Your Profile</h2>
+                 <p>Update your username or change your password to keep your account secure.</p>
+                 <a href="{{ url_for('profile.manage_profile') }}" class="btn btn-outline-secondary btn-lg px-4 mt-auto" type="button">Edit Profile</a>
+            </div>
+        </div>
+
+    </div>
+
+    </div>
+
 {% endblock %}

@@ -5,9 +5,9 @@
 {% block content %}
 <div class="row">
     <div class="col-md-8 offset-md-2">
+        <a href="{{ url_for('tasks.manage_tasks', group_id=group.id) }}"
+           class="btn btn-outline-secondary btn-sm">Back to Tasks</a>
         <h2 class="text-center mb-4">{{ task.name }}</h2>
-            <a href="{{ url_for('tasks.manage_tasks', group_id=group.id) }}"
-                class="btn btn-outline-secondary btn-sm">Back to Tasks</a>
         <form method="POST" action="{{ url_for('tasks.manage_single_task', task_id=task.id) }}">
             {{ form.hidden_tag() }}
 

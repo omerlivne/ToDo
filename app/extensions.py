@@ -13,6 +13,7 @@ bcrypt = Bcrypt()
 # Configure login manager
 @login_manager.user_loader
 def load_user(user_id):
+    # Import inside function to avoid circular imports
     from app.models.user import User
     return User.query.get(user_id)
 

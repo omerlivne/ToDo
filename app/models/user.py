@@ -9,7 +9,9 @@ class User(UserMixin, db.Model):
     username = db.Column(db.String(12), unique=True, nullable=False)
     password_hash = db.Column(db.String(128), nullable=False)
 
-    user_groups = db.relationship('UserGroup', back_populates='user')
+    # Relationship to the association table UserGroup
+    # back_populates creates a two-way relationship
+    user_groups = db.relationship('UserGroup', back_populates='user', cascade='all, delete-orphan')
 
     def __init__(self, username: str, password: str) -> None:
         """Initialize a new User instance with username and hashed password."""
@@ -27,5 +29,5 @@ class User(UserMixin, db.Model):
 
     @property
     def groups(self) -> list['Group | None']:
-        """List of admin user."""
+        """Return a list of Group objects the user is a member of."""
         return [ug.group for ug in self.user_groups]

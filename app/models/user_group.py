@@ -4,11 +4,15 @@ from app.extensions import db
 class UserGroup(db.Model):
     __tablename__ = "users_groups"
 
+    # Define composite primary key
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
     group_id = db.Column(db.Integer, db.ForeignKey('groups.id'), primary_key=True)
-    role = db.Column(db.Integer, nullable=False, default=0)  # 0=member, 1=admin, 2=owner
 
-    # Use string references for back_populates
+    # Role of the user within the group (0=member, 1=admin, 2=owner)
+    role = db.Column(db.Integer, nullable=False, default=0)
+
+    # Define relationships back to User and Group
+    # back_populates creates a two-way relationship link
     user = db.relationship('User', back_populates='user_groups')
     group = db.relationship('Group', back_populates='group_users')
 

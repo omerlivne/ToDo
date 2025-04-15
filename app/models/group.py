@@ -9,7 +9,14 @@ class Group(db.Model):
     name = db.Column(db.String(50), nullable=False)
     description = db.Column(db.Text)
 
+    # Relationship to the association table UserGroup
+    # back_populates creates a two-way relationship link
+    # cascade='all, delete-orphan' ensures memberships are deleted when a group is deleted
     group_users = db.relationship('UserGroup', back_populates='group', cascade='all, delete-orphan')
+
+    # Relationship to tasks within the group
+    # back_populates creates a two-way relationship link
+    # cascade='all, delete-orphan' ensures tasks are deleted when a group is deleted
     tasks = db.relationship('Task', backref='group', cascade='all, delete-orphan')
 
     def __init__(self, name: str, description: str = None) -> None:
@@ -51,6 +58,3 @@ class Group(db.Model):
     def admins(self) -> list['User | None']:
         """List of admin user."""
         return [ug.user for ug in self.group_users if ug.role == 1]
-
-
-

@@ -10,7 +10,7 @@ class User(UserMixin, db.Model):
     password_hash = db.Column(db.String(128), nullable=False)
 
     # Relationship to the association table UserGroup
-    # back_populates creates a two-way relationship
+    # back_populates creates a two-way relationship link
     user_groups = db.relationship('UserGroup', back_populates='user')
 
     def __init__(self, username: str, password: str) -> None:

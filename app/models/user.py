@@ -11,7 +11,7 @@ class User(UserMixin, db.Model):
 
     # Relationship to the association table UserGroup
     # back_populates creates a two-way relationship
-    user_groups = db.relationship('UserGroup', back_populates='user', cascade='all, delete-orphan')
+    user_groups = db.relationship('UserGroup', back_populates='user')
 
     def __init__(self, username: str, password: str) -> None:
         """Initialize a new User instance with username and hashed password."""

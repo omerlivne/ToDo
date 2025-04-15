@@ -7,6 +7,7 @@ from app.models import User
 
 class ProfileEditForm(FlaskForm):
     """Validates profile updates for username and password changes."""
+
     username = StringField("Username", validators=[
         DataRequired(),
         Regexp(r"^[0-9A-Za-z]{4,12}$",
@@ -27,4 +28,3 @@ class ProfileEditForm(FlaskForm):
         if field.data != current_user.username:
             if User.query.filter_by(username=field.data).first():
                 raise ValidationError("Username already taken. Choose another.")
-

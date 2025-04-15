@@ -5,6 +5,8 @@ from wtforms.validators import DataRequired, Optional, ValidationError, Regexp
 from datetime import datetime
 
 class TaskForm(FlaskForm):
+    """Form for creating a new task."""
+
     name = StringField("Name", validators=[
         DataRequired(),
         Regexp(r"^[A-Za-z0-9 ]{3,50}$",
@@ -18,6 +20,7 @@ class TaskForm(FlaskForm):
     submit = SubmitField('Create Task')
 
     def validate_due_date(self, field):
+        """Ensure due date is not in the past."""
         if field.data and field.data < datetime.now():
             raise ValidationError("Due date cannot be in the past")
 

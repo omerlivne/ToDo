@@ -24,7 +24,7 @@ class RegistrationForm(FlaskForm):
     submit = SubmitField("Register")
 
     def validate_username(self, field: StringField) -> None:
-        """Check username uniqueness before database commit."""
+        """Check username uniqueness."""
         if User.query.filter_by(username=field.data).first():
             raise ValidationError("Username unavailable. Choose another.")
 
